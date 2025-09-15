@@ -1,19 +1,19 @@
+require("dotenv").config();   // 👈 sabse top pe add karo
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const { swaggerUi, specs } = require('./swagger'); // ✅ yaha se swagger import
+const { swaggerUi, specs } = require('./swagger');
 const apiKeyAuth = require("./apiKeyAuth");
-
 
 const app = express();
 
 // Middlewares
 app.use(cors());
 app.use(express.json());
-// app.use(apiKeyAuth);
 
 // MongoDB Connection
-mongoose.connect('mongodb+srv://nikhil_db_user:DNAMsMuBu1kjCn0p@google-sheets.ocaggbv.mongodb.net/croptestdb?retryWrites=true&w=majority&appName=google-sheets', {
+mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
@@ -26,16 +26,14 @@ app.use(
   swaggerUi.serve,
   swaggerUi.setup(specs, null, {
     swaggerOptions: {
-      defaultModelRendering: 'model', // show model by default
-      // tryItOutEnabled: true,
-      // You can add other swaggerOptions if needed
+      defaultModelRendering: 'model',
     },
   })
 );
 
-// Routes
-app.use('/crops',apiKeyAuth, require('./routes/cropRoutes'));
-app.use('/farmer',apiKeyAuth, require('./routes/farmerRoutes'));
+// Routes with API key middleware
+app.use('/crops', apiKeyAuth, require('./routes/cropRoutes'));
+app.use('/farmer', apiKeyAuth, require('./routes/farmerRoutes'));
 app.use('/buyer', apiKeyAuth, require('./routes/buyerRoutes'));
 
 // Start Server
