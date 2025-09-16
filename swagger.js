@@ -19,20 +19,18 @@ const options = {
       },
     ],
     components: {
-      // 🔐 API Key Security Scheme
-
       securitySchemes: {
         ApiKeyAuth: {
           type: "apiKey",
           in: "header",
-          name: "x-api-key", // 👈 header name
+          name: "x-api-key",
         },
       },
       schemas: {
         Crop: {
           type: "object",
           properties: {
-            name: { type: "string", enum: cropList }, // enum used here
+            name: { type: "string" }, // enum inject later
             createdAt: { type: "string", format: "date-time" },
           },
           required: ["name"],
@@ -42,8 +40,7 @@ const options = {
           type: "object",
           properties: {
             userId: { type: "string", example: "user123" },
-            // IMPORTANT: no top-level example object for the entire schema
-            cropName: { type: "string", enum: cropList }, // enum -> dropdown
+            cropName: { type: "string" }, // enum inject later
             isReadyToHarvest: { type: "boolean", example: true },
             quantity: { type: "string", example: "500kg" },
             variety: { type: "string", example: "Basmati" },
@@ -80,7 +77,7 @@ const options = {
               type: "array",
               items: { type: "string", example: "Punjab" },
             },
-            cropName: { type: "string", enum: cropList }, // enum -> dropdown
+            cropName: { type: "string" }, // enum inject later
             quantityCanDeal: { type: "string", example: "1000kg" },
             expectedPrice: { type: "number", example: 2200 },
             createdAt: { type: "string", format: "date-time" },
@@ -97,15 +94,58 @@ const options = {
         },
       },
     },
-        security: [
+    security: [
       {
-        ApiKeyAuth: [], // 👈 ye add karna zaroori hai
+        ApiKeyAuth: [],
       },
     ],
   },
-  apis: [path.join(__dirname, "./routes/*.js")], // routes ke docs yahan se read honge
+  apis: [path.join(__dirname, "./routes/*.js")],
 };
 
 const specs = swaggerJsDoc(options);
+
+// 🔥 Centralized ENUM injection
+function injectCropEnum(specs) {
+  // Questions route param
+  const questionsParams = specs.paths?.["/questions"]?.get?.parameters;
+  if (questionsParams) {
+    const cropParam = questionsParams.find((p) => p.name === "cropName");
+    if (cropParam) {
+      cropParam.schema.enum = cropList;
+    }
+  }
+
+  // Schemas -> Crop
+  if (specs.components.schemas.Crop?.properties?.name) {
+    specs.components.schemas.Crop.properties.name.enum = cropList;
+  }
+
+  // 🔹 Schemas -> FarmerResponse
+  if (specs.components.schemas.FarmerResponse?.properties?.cropName) {
+    specs.components.schemas.FarmerResponse.properties.cropName.enum = cropList;
+  }
+
+  // 🔹 Schemas -> BuyerResponse
+  if (specs.components.schemas.BuyerResponse?.properties?.cropName) {
+    specs.components.schemas.BuyerResponse.properties.cropName.enum = cropList;
+  }
+
+  // 🔹 Parameters (query/path me jo cropName hai unme inject karna)
+  for (const pathKey of Object.keys(specs.paths)) {
+    const pathObj = specs.paths[pathKey];
+    for (const methodKey of Object.keys(pathObj)) {
+      const methodObj = pathObj[methodKey];
+      if (methodObj.parameters) {
+        methodObj.parameters.forEach((param) => {
+          if (param.name === "cropName" && param.schema?.type === "string") {
+            param.schema.enum = cropList; // 🚀 inject dropdown
+          }
+        });
+      }
+    }
+  }
+}
+injectCropEnum(specs);
 
 module.exports = { swaggerUi, specs };

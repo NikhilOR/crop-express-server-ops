@@ -1,45 +1,117 @@
-const BuyerResponse = require('../models/BuyerResponse');
+const BuyerResponse = require("../models/BuyerResponse");
+const QuestionBank = require("../models/questions");
 
-exports.addResponse = async (req, res) => {
+// 1️⃣ Create Buyer Response
+exports.createBuyerResponse = async (req, res) => {
   try {
-    const response = new BuyerResponse(req.body);
-    await response.save();
-    res.status(201).json(response);
+    const { userId, cropName, answers } = req.body;
+
+    if (!userId || !cropName || !answers) {
+      return res.status(400).json({ message: "userId, cropName and answers are required" });
+    }
+
+    // Check crop specific questions
+    let questionSet = await QuestionBank.findOne({ identity: "buyer", cropName });
+    if (!questionSet) {
+      questionSet = await QuestionBank.findOne({ identity: "buyer", cropName: "default" });
+    }
+
+    if (!questionSet) {
+      return res.status(404).json({ message: "No questions available for this crop or default" });
+    }
+
+    // Validate answers
+    const validQuestionIds = questionSet.questions.map(q => q._id.toString());
+    const filteredAnswers = answers.filter(ans => validQuestionIds.includes(ans.questionId));
+
+    // Save response
+    const newResponse = new BuyerResponse({
+      userId,
+      cropName,
+      answers: filteredAnswers,
+    });
+
+    await newResponse.save();
+
+    res.status(201).json({
+      message: "Buyer response saved successfully",
+      data: newResponse,
+    });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error("❌ Error saving buyer response:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-exports.getResponses = async (req, res) => {
+// 2️⃣ Get All Buyer Responses
+exports.getAllBuyerResponses = async (req, res) => {
   try {
-    const { userId } = req.query;
-    const filter = userId ? { userId } : {};
-    const responses = await BuyerResponse.find(filter).sort({ createdAt: -1 });
+    const responses = await BuyerResponse.find();
     res.json(responses);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("❌ Error fetching buyer responses:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-exports.updateResponse = async (req, res) => {
+// 3️⃣ Get Buyer Response by User (with questions populated)
+exports.getBuyerResponsesByUser = async (req, res) => {
   try {
-    const { id } = req.params;
-    const updateData = { ...req.body, updatedAt: new Date() };
-    const response = await BuyerResponse.findByIdAndUpdate(id, updateData, { new: true });
-    if (!response) return res.status(404).json({ error: 'Response not found' });
-    res.json(response);
+    const { userId } = req.params;
+
+    const responses = await BuyerResponse.find({ userId })
+      .populate("answers.questionId", "questionText"); // sirf text chahiye
+
+    if (!responses.length) {
+      return res.status(404).json({ message: "No responses found for this user" });
+    }
+
+    res.json(responses);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error("❌ Error fetching buyer responses by user:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-exports.deleteResponse = async (req, res) => {
+// 4️⃣ Update Buyer Response
+exports.updateBuyerResponse = async (req, res) => {
   try {
     const { id } = req.params;
-    const response = await BuyerResponse.findByIdAndDelete(id);
-    if (!response) return res.status(404).json({ error: 'Response not found' });
-    res.json({ message: 'Response deleted successfully' });
+    const { answers, supportDecision } = req.body;
+
+    const updatedResponse = await BuyerResponse.findByIdAndUpdate(
+      id,
+      { answers, supportDecision, updatedAt: Date.now() },
+      { new: true }
+    ).populate("answers.questionId", "questionText");
+
+    if (!updatedResponse) {
+      return res.status(404).json({ message: "Buyer response not found" });
+    }
+
+    res.json({
+      message: "Buyer response updated successfully",
+      data: updatedResponse,
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("❌ Error updating buyer response:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// 5️⃣ Delete Buyer Response
+exports.deleteBuyerResponse = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await BuyerResponse.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Buyer response not found" });
+    }
+
+    res.json({ message: "Buyer response deleted successfully" });
+  } catch (error) {
+    console.error("❌ Error deleting buyer response:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

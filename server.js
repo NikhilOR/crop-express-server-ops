@@ -34,7 +34,9 @@ app.use(
 // Routes with API key middleware
 app.use('/crops', apiKeyAuth, require('./routes/cropRoutes'));
 app.use('/farmer', apiKeyAuth, require('./routes/farmerRoutes'));
-app.use('/buyer', apiKeyAuth, require('./routes/buyerRoutes'));
+app.use('/buyer',  require('./routes/buyerRoutes'));
+app.use("/questions", require("./routes/questionRoutes"));
+
 
 // Start Server
 const PORT = process.env.PORT || 3001;

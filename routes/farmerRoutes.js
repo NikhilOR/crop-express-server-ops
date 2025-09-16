@@ -33,11 +33,18 @@ router.post('/responses', farmerController.addResponse);
  *   get:
  *     summary: Get all farmer responses
  *     tags: [Farmers]
+ *     parameters:
+ *       - in: query
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         description: Filter farmer responses by user ID
  *     responses:
  *       200:
  *         description: List of farmer responses
  */
 router.get('/responses', farmerController.getResponses);
+
 
 /**
  * @swagger

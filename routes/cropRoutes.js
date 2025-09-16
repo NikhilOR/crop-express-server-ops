@@ -11,7 +11,7 @@ const cropController = require('../controllers/cropController');
 
 /**
  * @swagger
- * /api/crops:
+ * /crops:
  *   get:
  *     summary: Get all crops
  *     tags: [Crops]
@@ -29,7 +29,7 @@ router.get('/', cropController.getCrops);
 
 /**
  * @swagger
- * /api/crops:
+ * /crops:
  *   post:
  *     summary: Add a new crop
  *     tags: [Crops]
@@ -49,7 +49,7 @@ router.post('/', cropController.addCrop);
 
 /**
  * @swagger
- * /api/crops/init:
+ * /crops/init:
  *   post:
  *     summary: Initialize default crops (bulk insert)
  *     tags: [Crops]
