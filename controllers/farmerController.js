@@ -2,7 +2,30 @@ const FarmerResponse = require('../models/FarmerResponse');
 
 exports.addResponse = async (req, res) => {
   try {
-    const response = new FarmerResponse(req.body);
+    const {
+      userId,
+      cropName,
+      isReadyToHarvest,
+      quantity,
+      quantityUnit,
+      variety,
+      nextHarvestDate,
+      expectedPrice,
+      priceUnit,
+    } = req.body;
+
+    const response = new FarmerResponse({
+      userId,
+      cropName,
+      isReadyToHarvest: isReadyToHarvest === "true" || isReadyToHarvest === true,
+      quantity: quantity || undefined,       // ✅ sirf number
+      quantityUnit: quantityUnit || undefined,
+      variety,
+      nextHarvestDate: nextHarvestDate ? new Date(nextHarvestDate) : undefined,
+      expectedPrice: expectedPrice || undefined,  // ✅ sirf number
+      priceUnit: priceUnit || undefined,
+    });
+
     await response.save();
     res.status(201).json(response);
   } catch (error) {
@@ -24,7 +47,22 @@ exports.getResponses = async (req, res) => {
 exports.updateResponse = async (req, res) => {
   try {
     const { id } = req.params;
-    const updateData = { ...req.body, updatedAt: new Date() };
+
+    const updateData = {
+      userId: req.body.userId,
+      cropName: req.body.cropName,
+      isReadyToHarvest: req.body.isReadyToHarvest === "true" || req.body.isReadyToHarvest === true,
+      quantity: req.body.quantity || undefined,
+      quantityUnit: req.body.quantityUnit || undefined,
+      variety: req.body.variety,
+      nextHarvestDate: req.body.nextHarvestDate ? new Date(req.body.nextHarvestDate) : undefined,
+      expectedPrice: req.body.expectedPrice || undefined,
+      priceUnit: req.body.priceUnit || undefined,
+      updatedAt: new Date(),
+    };
+
+    Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
+
     const response = await FarmerResponse.findByIdAndUpdate(id, updateData, { new: true });
     if (!response) return res.status(404).json({ error: 'Response not found' });
     res.json(response);

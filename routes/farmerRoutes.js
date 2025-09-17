@@ -11,6 +11,57 @@ const farmerController = require('../controllers/farmerController');
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     FarmerResponse:
+ *       type: object
+ *       required:
+ *         - userId
+ *         - cropName
+ *         - isReadyToHarvest
+ *         - quantity
+ *         - quantityUnit
+ *         - expectedPrice
+ *         - priceUnit
+ *       properties:
+ *         userId:
+ *           type: string
+ *           description: ID of the user (farmer)
+ *         cropName:
+ *           type: string
+ *           description: Name of the crop
+ *         isReadyToHarvest:
+ *           type: boolean
+ *           description: Whether the crop is ready to harvest
+ *         quantity:
+ *           type: number
+ *           description: Quantity of crop (numeric value only, e.g. 500)
+ *         quantityUnit:
+ *           type: string
+ *           description: Unit of quantity (e.g. "kg", "quintal", "ton")
+ *         variety:
+ *           type: string
+ *           description: Variety of the crop (optional)
+ *         nextHarvestDate:
+ *           type: string
+ *           format: date
+ *           description: Expected date of next harvest
+ *         expectedPrice:
+ *           type: number
+ *           description: Expected price (numeric value only, e.g. 2500)
+ *         priceUnit:
+ *           type: string
+ *           description: Unit of price (e.g. "per kg", "per quintal")
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ */
+
+/**
+ * @swagger
  * /farmer/responses:
  *   post:
  *     summary: Submit a farmer response
@@ -44,7 +95,6 @@ router.post('/responses', farmerController.addResponse);
  *         description: List of farmer responses
  */
 router.get('/responses', farmerController.getResponses);
-
 
 /**
  * @swagger

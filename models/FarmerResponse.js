@@ -1,16 +1,17 @@
 const mongoose = require('mongoose');
-const { cropList } = require("../enums/cropEnum");
 
-const farmerResponseSchema = new mongoose.Schema({
+const FarmerResponseSchema = new mongoose.Schema({
   userId: { type: String, required: true },
-  cropName: { type: String, enum: cropList, required: true },
+  cropName: { type: String, required: true },
   isReadyToHarvest: { type: Boolean, required: true },
-  quantity: { type: String, required: true },
-  variety: { type: String, required: true },
-  nextHarvestDate: { type: Date, required: true },
-  expectedPrice: { type: Number, required: true },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-});
+  quantity: { type: Number },       // ✅ sirf value
+  quantityUnit: { type: String },   // ✅ unit alag
+  variety: { type: String },        // optional
+  nextHarvestDate: { type: Date },
+  expectedPrice: { type: Number },  // ✅ sirf value
+  priceUnit: { type: String },      // ✅ unit alag
+}, { timestamps: true,
+  versionKey: false  // to disable the "__v" field
+ });
 
-module.exports = mongoose.model('FarmerResponse', farmerResponseSchema);
+module.exports = mongoose.model('FarmerResponse', FarmerResponseSchema);
