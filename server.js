@@ -1,4 +1,4 @@
-require("dotenv").config();   // 👈 sabse top pe add karo
+require("dotenv").config();   
 
 const express = require('express');
 const mongoose = require('mongoose');

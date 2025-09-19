@@ -140,4 +140,25 @@ router.put('/responses/:id', farmerController.updateResponse);
  */
 router.delete('/responses/:id', farmerController.deleteResponse);
 
+/**
+ * @swagger
+ * /farmer/responses/{id}:
+ *   get:
+ *     summary: Get a farmer response by ID
+ *     tags: [Farmers]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Farmer response ID
+ *     responses:
+ *       200:
+ *         description: Farmer response retrieved successfully
+ *       404:
+ *         description: Response not found
+ */
+router.get('/responses/:id', farmerController.getResponseById);
+
 module.exports = router;

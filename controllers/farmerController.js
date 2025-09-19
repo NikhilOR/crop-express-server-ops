@@ -81,3 +81,15 @@ exports.deleteResponse = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.getResponseById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const response = await FarmerResponse.findById(id);  // 👈 yaha _id
+    if (!response) return res.status(404).json({ error: "Response not found" });
+    res.json(response);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
